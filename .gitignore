@@ -1,0 +1,6 @@
+/Release/
+/*.stackdump
+/.settings/
+/.project
+/.cproject
+/_build/
