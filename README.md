@@ -1,0 +1,2 @@
+# Parallel Edit distance
+this repo contains a project that compare sequential and parallel versions of a program that implements the Wagner-Fischer algorithm for computing the edit distance (or Levenshtein distance) between two strings.
