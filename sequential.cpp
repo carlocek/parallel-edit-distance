@@ -15,12 +15,12 @@
 
 using namespace std;
 
-void printMatrix(int **D, int M, int N)
+void printMatrix(int **D, int lenA, int lenB)
 {
     int i, j;
-    for (i = 0; i < M; i++)
+    for (i = 0; i < lenA+1; i++)
     {
-        for (j = 0; j < N; j++)
+        for (j = 0; j < lenB+1; j++)
         {
             printf("%i, ", D[i][j]);
             fflush(stdout);
@@ -48,35 +48,35 @@ string generateRandString(int size)
 
 int main()
 {
-	int size = 50000;
-	string a = generateRandString(size);
-	string b = generateRandString(size);
-//	cout << a << endl << b << endl;
+	int size = 70000;
+	string A = generateRandString(size);
+	string B = generateRandString(size);
+//	cout << A << endl << B << endl;
 
 	chrono::high_resolution_clock::time_point t1, t2;
 	chrono::duration<double> time_span;
 
-//	for(int it = 0; it < 6; it++)
+//	for(int it = 0; it < 30; it++)
 //	{
 	t1 = chrono::high_resolution_clock::now();
 
-	int M = a.size();
-	int N = b.size();
+	unsigned int lenA = A.size();
+	unsigned int lenB = B.size();
 
-	int** D = new int*[M+1]();
-	for (int i = 0; i < M+1; i++)
-	    D[i] = new int[N+1]();
+	unsigned int** D = new unsigned int*[lenA+1];
+	for (int i = 0; i < lenA+1; i++)
+	    D[i] = new unsigned int[lenB+1];
 
-	for(int i = 0; i < M+1; i++)
+	for(int i = 0; i < lenA+1; i++)
 		D[i][0] = i;
-	for(int j = 1; j < N+1; j++)
+	for(int j = 1; j < lenB+1; j++)
 		D[0][j] = j;
 
-	for(int i = 1; i < M+1; i++)
+	for(int i = 1; i < lenA+1; i++)
 	{
-		for(int j = 1; j < N+1; j++)
+		for(int j = 1; j < lenB+1; j++)
 		{
-			if(a[i-1] != b[j-1])
+			if(A[i-1] != B[j-1])
 			{
 				D[i][j] = 1 + min({D[i][j-1], D[i-1][j], D[i-1][j-1]});
 			}
@@ -91,8 +91,8 @@ int main()
 	printf("\nelapsed time: %f\n", time_span.count());
 	fflush(stdout);
 
-//	printMatrix(D, M+1, N+1);
-	cout << D[M][N] << endl;
+//	printMatrix(D, lenA, lenB);
+	cout << "sequential edit distance: " << D[lenA][lenB] << endl;
 //	}
 
 	return 0;
