@@ -6,7 +6,6 @@
 #include <string>
 #include <cstring>
 #include <iterator>
-#include <unordered_map>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -51,11 +50,11 @@ void computeTile(int I, int J, unsigned int lenA, unsigned int lenB, string A, s
 {
 	I = I * tileWidth + 1;
 	J = J * tileWidth + 1;
-	for (int i = I; i < lenB+1 && i < I+tileWidth; i++)
+	for(int i = I; i < lenB+1 && i < I+tileWidth; i++)
 	{
-		for (int j = J; j < lenA+1 && j < J+tileWidth; j++)
+		for(int j = J; j < lenA+1 && j < J+tileWidth; j++)
 		{
-			if (A[j - 1] != B[i - 1])
+			if(A[j - 1] != B[i - 1])
 			{
 				D[i * (lenA+1) + j] = 1 + min({D[i * (lenA+1) + j - 1], D[(i - 1) * (lenA+1) + j], D[(i - 1) * (lenA+1) + j - 1]});
 			}
@@ -69,7 +68,7 @@ void computeTile(int I, int J, unsigned int lenA, unsigned int lenB, string A, s
 
 int main()
 {
-	int size = 70000;
+	int size = 30000;
 	string A = generateRandString(size);
 	string B = generateRandString(size);
 
@@ -80,7 +79,7 @@ int main()
 	chrono::high_resolution_clock::time_point t1, t2;
 	chrono::duration<double> time_span;
 
-	int nthreads = 2;
+	int nthreads = 1;
 	omp_set_dynamic(0);
 	omp_set_num_threads(nthreads);
 	int tileWidth = 500;
@@ -93,8 +92,6 @@ int main()
 	unsigned int lenB = B.size();
 
 	unsigned int* D = new unsigned int[(lenA+1)*(lenB+1)];
-	printf("aaa\n");
-		fflush(stdout);
 
 	for(int i = 0; i < lenA+1; i++)
 		D[i] = i;
@@ -118,12 +115,11 @@ int main()
 				#pragma omp taskloop
 				for(int i = imin; i < imax; i++)
 				{
-//					printf("aaa: %d\n", omp_get_thread_num());
+//					printf("thread %d, outer iteration %d, inner iteration %d\n", omp_get_thread_num(), d, i);
 //					fflush(stdout);
 					int j = tilesA + d - i - 1;
 					computeTile(i, j, lenA, lenB, A, B, D, tileWidth);
 				}
-//				#pragma omp taskwait
 			}
 		}
 	}

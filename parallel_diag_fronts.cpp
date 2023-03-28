@@ -68,7 +68,7 @@ int main()
 	chrono::high_resolution_clock::time_point t1, t2;
 	chrono::duration<double> time_span;
 
-	int nthreads = 16;
+	int nthreads = 4;
 	omp_set_dynamic(0);
 	omp_set_num_threads(nthreads);
 
@@ -79,6 +79,10 @@ int main()
 	unsigned int lenA = A.size();
 	unsigned int lenB = B.size();
 
+	unsigned int* currDiagPtr;
+	unsigned int* prevDiagPtr;
+	unsigned int* prevprevDiagPtr;
+
 	unsigned int* currDiag = new unsigned int[lenA+1];
 	unsigned int* prevDiag = new unsigned int[lenA+1];
 	unsigned int* prevprevDiag = new unsigned int[lenA+1];
@@ -87,7 +91,11 @@ int main()
 	prevDiag[0] = 1;
 	prevDiag[1] = 1;
 
-	#pragma omp parallel default(none) shared(prevprevDiag, prevDiag, currDiag, lenA, lenB, A, B)
+	prevprevDiagPtr = prevprevDiag;
+	prevDiagPtr = prevDiag;
+	currDiagPtr = currDiag;
+
+	#pragma omp parallel default(none) shared(prevprevDiagPtr, prevDiagPtr, currDiagPtr, lenA, lenB, A, B)
 	{
 		#pragma omp master
 		{
@@ -95,37 +103,35 @@ int main()
 			int dmax = lenB+1;
 			for(int d = dmin; d < dmax; d++)
 			{
-				int imin = max(0, d);
-				int imax = min(lenA + d, lenB);
-				int i;
-				int j;
+				int imin = max(1, d);
+				int imax = min(lenA+d, lenB+1);
+				int i, j;
+				if(d < 1)
+				{
+					currDiagPtr[0] = imax;
+					currDiagPtr[lenA+d] = imax;
+				}
 				#pragma omp taskloop
-				for(i = imin; i <= imax; i++)
+				for(i = imin; i < imax; i++)
 				{
 //					printf("aaa: %d\n", omp_get_thread_num());
 //					fflush(stdout);
 					j = lenA + d - i;
-					if(j-1 < 0 || i-1 < 0)
-					{
-						currDiag[i] = imax;
-					}
-					else if(A[j-1] != B[i-1])
-						currDiag[i] = 1 + min({prevDiag[i], prevDiag[i-1], prevprevDiag[i-1]});
+					if(A[j-1] != B[i-1])
+						currDiagPtr[i] = 1 + min({prevDiagPtr[i], prevDiagPtr[i-1], prevprevDiagPtr[i-1]});
 					else
-						currDiag[i] = prevprevDiag[i-1];
+						currDiagPtr[i] = prevprevDiagPtr[i-1];
 				}
 //				#pragma omp taskwait
-//				printf("%d, %d , %d, %d, %d\n", currDiag[0], currDiag[1], currDiag[2], currDiag[3], currDiag[4]);
+//				printf("%d, %d , %d, %d, %d\n", currDiagPtr[0], currDiagPtr[1], currDiagPtr[2], currDiagPtr[3], currDiagPtr[4]);
 //				fflush(stdout);
 
-				unsigned int* tmp = prevprevDiag;
-				prevprevDiag = prevDiag;
-				prevDiag = currDiag;
-				currDiag = tmp;
-
+				unsigned int* tmp = prevprevDiagPtr;
+				prevprevDiagPtr = prevDiagPtr;
+				prevDiagPtr = currDiagPtr;
+				currDiagPtr = tmp;
 			}
 		}
-
 	}
 	t2 = chrono::high_resolution_clock::now();
 	time_span = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
@@ -137,12 +143,3 @@ int main()
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-

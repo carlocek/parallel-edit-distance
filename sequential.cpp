@@ -48,7 +48,7 @@ string generateRandString(int size)
 
 int main()
 {
-	int size = 70000;
+	int size = 10000;
 	string A = generateRandString(size);
 	string B = generateRandString(size);
 //	cout << A << endl << B << endl;
