@@ -14,8 +14,6 @@
 #include <cmath>
 #include <omp.h>
 
-#define CACHE_LINE_SIZE 64
-
 using namespace std;
 
 void printMatrix(int *D, int lenA, int lenB)
@@ -49,12 +47,6 @@ string generateRandString(int size)
     return result;
 }
 
-struct cache_storage
-{
-    int data;
-    char pad[CACHE_LINE_SIZE];
-};
-
 int main()
 {
 	int size = 70000;
@@ -79,14 +71,17 @@ int main()
 	unsigned int lenA = A.size();
 	unsigned int lenB = B.size();
 
+	//pointers for fast swapping
 	unsigned int* currDiagPtr;
 	unsigned int* prevDiagPtr;
 	unsigned int* prevprevDiagPtr;
 
+	//antidiagonals of max possible size to mantain only three arrays in memory
 	unsigned int* currDiag = new unsigned int[lenA+1];
 	unsigned int* prevDiag = new unsigned int[lenA+1];
 	unsigned int* prevprevDiag = new unsigned int[lenA+1];
 
+	//initialize first two antidiagonals
 	prevprevDiag[0] = 0;
 	prevDiag[0] = 1;
 	prevDiag[1] = 1;
@@ -114,18 +109,13 @@ int main()
 				#pragma omp taskloop
 				for(i = imin; i < imax; i++)
 				{
-//					printf("aaa: %d\n", omp_get_thread_num());
-//					fflush(stdout);
 					j = lenA + d - i;
 					if(A[j-1] != B[i-1])
 						currDiagPtr[i] = 1 + min({prevDiagPtr[i], prevDiagPtr[i-1], prevprevDiagPtr[i-1]});
 					else
 						currDiagPtr[i] = prevprevDiagPtr[i-1];
 				}
-//				#pragma omp taskwait
-//				printf("%d, %d , %d, %d, %d\n", currDiagPtr[0], currDiagPtr[1], currDiagPtr[2], currDiagPtr[3], currDiagPtr[4]);
-//				fflush(stdout);
-
+				//advance pointers before next antidiagonal
 				unsigned int* tmp = prevprevDiagPtr;
 				prevprevDiagPtr = prevDiagPtr;
 				prevDiagPtr = currDiagPtr;
@@ -138,7 +128,7 @@ int main()
 	printf("\nelapsed time: %f\n", time_span.count());
 	fflush(stdout);
 
-	cout << currDiag[lenA] << endl;
+	cout << "parallel edit distance: " << currDiag[lenA] << endl;
 	}
 
 	return 0;

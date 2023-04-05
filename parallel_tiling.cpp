@@ -48,6 +48,7 @@ string generateRandString(int size)
 
 void computeTile(int I, int J, unsigned int lenA, unsigned int lenB, string A, string B, unsigned int* D, int tileWidth)
 {
+	//compute start row and column indexes of D from tile coordinates in the "tiled matrix"
 	I = I * tileWidth + 1;
 	J = J * tileWidth + 1;
 	for(int i = I; i < lenB+1 && i < I+tileWidth; i++)
@@ -93,6 +94,7 @@ int main()
 
 	unsigned int* D = new unsigned int[(lenA+1)*(lenB+1)];
 
+	//initialize first row and first column
 	for(int i = 0; i < lenA+1; i++)
 		D[i] = i;
 	for(int j = 1; j < lenB+1; j++)
@@ -104,19 +106,19 @@ int main()
 
 	#pragma omp parallel default(none) shared(D, A, B, lenA, lenB, tilesA, tilesB, tileWidth)
 	{
+		//compute number of antidiagonals of tiles to be computed with synchronization in between
 		int dmin = 1-tilesA;
 		int dmax = tilesB;
 		#pragma omp master
 		{
 			for(int d = dmin; d < dmax; d++)
 			{
+				//compute number of tiles in the current antidiagonal to be computed in parallel
 				int imin = max(0, d);
 				int imax = min(tilesA + d, tilesB);
 				#pragma omp taskloop
 				for(int i = imin; i < imax; i++)
 				{
-//					printf("thread %d, outer iteration %d, inner iteration %d\n", omp_get_thread_num(), d, i);
-//					fflush(stdout);
 					int j = tilesA + d - i - 1;
 					computeTile(i, j, lenA, lenB, A, B, D, tileWidth);
 				}
