@@ -49,7 +49,7 @@ string generateRandString(int size)
 
 int main()
 {
-	int size = 70000;
+	int size = 150000;
 	string A = generateRandString(size);
 	string B = generateRandString(size);
 
@@ -60,7 +60,7 @@ int main()
 	chrono::high_resolution_clock::time_point t1, t2;
 	chrono::duration<double> time_span;
 
-	int nthreads = 4;
+	int nthreads = 1;
 	omp_set_dynamic(0);
 	omp_set_num_threads(nthreads);
 
@@ -90,10 +90,10 @@ int main()
 	prevDiagPtr = prevDiag;
 	currDiagPtr = currDiag;
 
-	#pragma omp parallel default(none) shared(prevprevDiagPtr, prevDiagPtr, currDiagPtr, lenA, lenB, A, B)
-	{
-		#pragma omp master
-		{
+//	#pragma omp parallel default(none) shared(prevprevDiagPtr, prevDiagPtr, currDiagPtr, lenA, lenB, A, B)
+//	{
+//		#pragma omp master
+//		{
 			int dmin = 2-lenA;
 			int dmax = lenB+1;
 			for(int d = dmin; d < dmax; d++)
@@ -106,7 +106,7 @@ int main()
 					currDiagPtr[0] = imax;
 					currDiagPtr[lenA+d] = imax;
 				}
-				#pragma omp taskloop
+//				#pragma omp taskloop
 				for(i = imin; i < imax; i++)
 				{
 					j = lenA + d - i;
@@ -121,8 +121,8 @@ int main()
 				prevDiagPtr = currDiagPtr;
 				currDiagPtr = tmp;
 			}
-		}
-	}
+//		}
+//	}
 	t2 = chrono::high_resolution_clock::now();
 	time_span = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
 	printf("\nelapsed time: %f\n", time_span.count());

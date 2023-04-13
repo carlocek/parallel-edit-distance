@@ -80,13 +80,13 @@ int main()
 	chrono::high_resolution_clock::time_point t1, t2;
 	chrono::duration<double> time_span;
 
-	int nthreads = 1;
+	int nthreads = 8;
 	omp_set_dynamic(0);
 	omp_set_num_threads(nthreads);
-	int tileWidth = 500;
+	int tileWidth = 512;
 
-//	for(int it = 0; it < 10; it++)
-//	{
+	for(int it = 0; it < 10; it++)
+	{
 	t1 = chrono::high_resolution_clock::now();
 
 	unsigned int lenA = A.size();
@@ -131,7 +131,8 @@ int main()
 	fflush(stdout);
 
 	cout << "parallel edit distance: " << D[lenB*(lenA+1) + lenA] << endl;
-//	}
+	free((void*)D);
+	}
 	return 0;
 }
 

@@ -99,17 +99,17 @@ int main()
 	d_prevDiagPtr = d_prevDiag;
 	d_currDiagPtr = d_currDiag;
 
-	int bDim = 128;
-	int gDim = ceil((float)(lenA+1)/bDim);
+//	int bDim = 128;
+//	int gDim = ceil((float)(lenA+1)/bDim);
 	int dmin = 2-lenA;
 	int dmax = lenB+1;
 	int ed;
 	for(int d = dmin; d < dmax; d++)
 	{
-//		int imax = min(lenA+d+1, lenB+1);
-//		int gDim = ceil((float)(imax)/bDim);
+		int imax = min(lenA+d+1, lenB+1);
+		int bDim = min(imax, 512);
+		int gDim = ceil((float)(imax)/bDim);
 		editDistKernel<<<gDim, bDim>>>(devA, devB, lenA, lenB, d_prevprevDiagPtr, d_prevDiagPtr, d_currDiagPtr, d);
-//		cudaDeviceSynchronize();
 
 		unsigned int* tmp = d_prevprevDiagPtr;
 		d_prevprevDiagPtr = d_prevDiagPtr;
@@ -120,8 +120,8 @@ int main()
 	cudaMemcpy((void*)&ed, (void*)&d_prevDiag[lenA], 1*sizeof(unsigned int), cudaMemcpyDeviceToHost);
 	
 	t2 = chrono::high_resolution_clock::now();
-	cudaFree((void*)devA);
-	cudaFree((void*)devB);
+	cudaFree(devA);
+	cudaFree(devB);
 	cudaFree(d_prevprevDiagPtr);
 	cudaFree(d_prevDiagPtr);
 	cudaFree(d_currDiagPtr);
